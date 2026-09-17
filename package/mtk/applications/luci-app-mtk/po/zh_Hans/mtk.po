@@ -22,6 +22,9 @@ msgstr "IE (爱尔兰)"
 msgid "CN"
 msgstr "CN (中国)"
 
+msgid "AU"
+msgstr "AU (澳大利亚)"
+
 msgid "NONE"
 msgstr "无"
 
