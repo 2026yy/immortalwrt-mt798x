@@ -8,6 +8,8 @@ sed -i '/telephony/d; /routing/d; /modemfeed/d' feeds.conf.default
 git config --global core.compression 1
 git config --global advice.detachedHead false
 git config --global http.version HTTP/1.1
+git config --global protocol.version 2
+git config --global fetch.parallel 8
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a

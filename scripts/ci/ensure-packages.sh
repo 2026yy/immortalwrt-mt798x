@@ -49,5 +49,20 @@ if [ -n "$missing" ]; then
 	exit 1
 fi
 
+device="${DEVICE:-}"
+if [ -n "$device" ] && [ "$device" != "all-mt7981-devices" ]; then
+	if ! grep -q "^CONFIG_TARGET_mediatek_mt7981_DEVICE_${device}=y" .config; then
+		echo "ERROR: profile ${device} was not selected after defconfig"
+		grep -E 'CONFIG_TARGET_.*DEVICE_|CONFIG_TARGET_MULTI_PROFILE|CONFIG_TARGET_PROFILE' .config || true
+		exit 1
+	fi
+	if grep -q '^CONFIG_TARGET_mediatek_mt7981_DEVICE_mt7981-spim-nor-rfb=y' .config; then
+		echo "ERROR: defconfig fell back to mt7981-spim-nor-rfb"
+		exit 1
+	fi
+	echo "Target profile:"
+	grep -E '^CONFIG_TARGET_(MULTI_PROFILE|PER_DEVICE_ROOTFS|PROFILE|mediatek_mt7981_DEVICE_)' .config || true
+fi
+
 echo "Required extra packages are selected:"
 grep -E '^CONFIG_PACKAGE_(luci-theme-argon|luci-app-argon-config|luci-app-ttyd|ttyd|luci-app-sqm|sqm-scripts)=' .config
