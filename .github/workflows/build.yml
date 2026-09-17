@@ -213,12 +213,49 @@ jobs:
         with:
           name: immortalwrt-${{ github.event.inputs.device }}-${{ env.FILE_DATE }}
           path: ${{ env.FIRMWARE }}
+          if-no-files-found: error
+          compression-level: 0
 
       - name: Upload firmware to release
-        uses: softprops/action-gh-release@v2
         if: steps.organize.outputs.status == 'success' && !cancelled()
-        with:
-          tag_name: ${{ github.event.inputs.device }}-${{ env.FILE_DATE }}
-          name: ${{ github.event.inputs.device }} ${{ env.FILE_DATE }}
-          files: ${{ env.FIRMWARE }}/*
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${{ github.event.inputs.device }}-${{ env.FILE_DATE }}"
+          title="${{ github.event.inputs.device }} ${{ env.FILE_DATE }}"
+          cd "$FIRMWARE"
+          ls -lh
+          gh release view "$tag" >/dev/null 2>&1 || \
+            gh release create "$tag" --title "$title" --generate-notes --target "${{ github.sha }}"
+          fail=0
+          uploaded=
+          upload_one() {
+            f="$1"
+            [ -f "$f" ] || return 0
+            case " $uploaded " in
+              *" $f "*) return 0 ;;
+            esac
+            ok=0
+            for i in 1 2 3 4 5; do
+              if gh release upload "$tag" "$f" --clobber; then
+                ok=1
+                break
+              fi
+              echo "upload $f failed, retry $i"
+              sleep $((i * 8))
+            done
+            uploaded="$uploaded $f"
+            [ "$ok" = 1 ] || fail=1
+          }
+          for f in immortalwrt-*-squashfs-sysupgrade.bin \
+                   immortalwrt-*-squashfs-factory.bin \
+                   immortalwrt-*-initramfs-kernel.bin; do
+            upload_one "$f"
+          done
+          for f in *; do
+            upload_one "$f"
+          done
+          gh release view "$tag" --json assets --jq '.assets[].name'
+          test -n "$(gh release view "$tag" --json assets --jq '.assets[].name | select(test("sysupgrade"))')"
+          [ "$fail" = 0 ]
