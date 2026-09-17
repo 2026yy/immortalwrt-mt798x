@@ -11,3 +11,6 @@ git config --global http.version HTTP/1.1
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
+./scripts/feeds install luci-theme-argon luci-app-argon-config \
+	luci-app-ttyd luci-app-sqm
+test -e package/feeds/luci/luci-theme-argon/Makefile

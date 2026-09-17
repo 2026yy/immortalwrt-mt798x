@@ -1,14 +1,29 @@
 #!/bin/sh
-# Use ImmortalWrt 21.02 feed Argon. Only set it as the default LuCI theme.
+# Use ImmortalWrt 21.02 feed Argon as the default LuCI theme.
+# Patch virtual wget/curl deps so make defconfig does not drop the package.
 set -e
 
 ROOT="${1:-.}"
 cd "$ROOT"
 
+for mk in \
+	package/feeds/luci/luci-theme-argon/Makefile \
+	feeds/luci/themes/luci-theme-argon/Makefile
+do
+	[ -f "$mk" ] || continue
+	sed -i 's/+wget/+wget-ssl/g; s/+curl/+wget-ssl/g' "$mk"
+done
+
+if [ ! -e package/feeds/luci/luci-theme-argon/Makefile ] && [ ! -e feeds/luci/themes/luci-theme-argon/Makefile ]; then
+	echo "ERROR: luci-theme-argon was not installed from the luci feed"
+	exit 1
+fi
+
 mkdir -p files/etc/uci-defaults
 cat > files/etc/uci-defaults/30-default-theme <<'EOF'
 #!/bin/sh
 uci -q batch <<-EOT
+	set luci.themes.Argon='/luci-static/argon'
 	set luci.main.mediaurlbase='/luci-static/argon'
 	commit luci
 EOT

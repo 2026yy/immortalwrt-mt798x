@@ -113,7 +113,7 @@ jobs:
             echo 'CONFIG_TARGET_MULTI_PROFILE=y' >> .config
             echo 'CONFIG_TARGET_PER_DEVICE_ROOTFS=y' >> .config
             echo "CONFIG_TARGET_DEVICE_mediatek_mt7981_DEVICE_${device}=y" >> .config
-            echo "CONFIG_TARGET_DEVICE_PACKAGES_mediatek_mt7981_DEVICE_${device}=\"\"" >> .config
+            echo "CONFIG_TARGET_DEVICE_PACKAGES_mediatek_mt7981_DEVICE_${device}=\"luci-theme-argon luci-app-argon-config luci-app-ttyd ttyd luci-app-sqm sqm-scripts luci-i18n-ttyd-zh-cn luci-i18n-sqm-zh-cn wget-ssl libwebsockets-full\"" >> .config
           fi
           cat scripts/ci/ci-extra.config >> .config
           echo "Selected device config:"
@@ -155,6 +155,8 @@ jobs:
         id: package
         run: |
           make defconfig
+          chmod +x scripts/ci/ensure-packages.sh
+          scripts/ci/ensure-packages.sh "$PWD"
           make download -j"$(nproc)"
           find dl -size -1024c -exec ls -l {} \;
           find dl -size -1024c -exec rm -f {} \;
