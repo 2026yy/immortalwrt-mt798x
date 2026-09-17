@@ -108,13 +108,16 @@ jobs:
           if [ "$device" != "all-mt7981-devices" ]; then
             sed -i '/^CONFIG_TARGET_DEVICE_mediatek_mt7981_DEVICE_/d' .config
             sed -i '/^CONFIG_TARGET_DEVICE_PACKAGES_mediatek_mt7981_DEVICE_/d' .config
+            sed -i '/CONFIG_TARGET_MULTI_PROFILE/d' .config
+            sed -i '/CONFIG_TARGET_PER_DEVICE_ROOTFS/d' .config
+            echo 'CONFIG_TARGET_MULTI_PROFILE=y' >> .config
+            echo 'CONFIG_TARGET_PER_DEVICE_ROOTFS=y' >> .config
             echo "CONFIG_TARGET_DEVICE_mediatek_mt7981_DEVICE_${device}=y" >> .config
             echo "CONFIG_TARGET_DEVICE_PACKAGES_mediatek_mt7981_DEVICE_${device}=\"\"" >> .config
-            sed -i '/CONFIG_TARGET_MULTI_PROFILE/d' .config
-            echo '# CONFIG_TARGET_MULTI_PROFILE is not set' >> .config
-            echo '# CONFIG_TARGET_PER_DEVICE_ROOTFS is not set' >> .config
           fi
           cat scripts/ci/ci-extra.config >> .config
+          echo "Selected device config:"
+          grep -E 'CONFIG_TARGET_(MULTI_PROFILE|PER_DEVICE_ROOTFS|DEVICE_mediatek_mt7981_DEVICE_)' .config || true
 
       - name: Customize LAN IP
         run: |
@@ -171,9 +174,24 @@ jobs:
         id: organize
         if: steps.compile.outputs.status == 'success' && !cancelled()
         run: |
+          device="${{ github.event.inputs.device }}"
           cd bin/targets/*/*
           rm -rf packages
-          echo "FIRMWARE=$PWD" >> "$GITHUB_ENV"
+          out="$GITHUB_WORKSPACE/firmware-out"
+          mkdir -p "$out"
+          if [ "$device" != "all-mt7981-devices" ]; then
+            if ! ls -1 *"${device}"* >/dev/null 2>&1; then
+              echo "ERROR: firmware for ${device} was not built"
+              ls -lh
+              exit 1
+            fi
+            cp -a *"${device}"* "$out/"
+            cp -a sha256sums config.buildinfo feeds.buildinfo version.buildinfo profiles.json "$out/" 2>/dev/null || true
+          else
+            cp -a . "$out/"
+          fi
+          ls -lh "$out"
+          echo "FIRMWARE=$out" >> "$GITHUB_ENV"
           echo "status=success" >> "$GITHUB_OUTPUT"
 
       - name: Upload firmware directory
