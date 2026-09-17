@@ -11,7 +11,11 @@ git config --global http.version HTTP/1.1
 git config --global protocol.version 2
 git config --global fetch.parallel 8
 
-./scripts/feeds update -a
+if ! ./scripts/feeds update -a; then
+	echo "feeds update failed; dropping cached feeds and recloning"
+	rm -rf feeds/luci feeds/packages feeds/luci.tmp feeds/packages.tmp
+	./scripts/feeds update -a
+fi
 ./scripts/feeds install -a
 ./scripts/feeds install luci-theme-argon luci-app-argon-config \
 	luci-app-ttyd luci-app-sqm
