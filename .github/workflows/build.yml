@@ -117,12 +117,11 @@ jobs:
             sed -i '/CONFIG_TARGET_MULTI_PROFILE/d' .config
             sed -i '/CONFIG_TARGET_PER_DEVICE_ROOTFS/d' .config
             sed -i '/CONFIG_TARGET_ALL_PROFILES/d' .config
-            cat >> .config <<EOF
-# CONFIG_TARGET_MULTI_PROFILE is not set
-# CONFIG_TARGET_PER_DEVICE_ROOTFS is not set
-# CONFIG_TARGET_ALL_PROFILES is not set
-CONFIG_TARGET_mediatek_mt7981_DEVICE_${device}=y
-EOF
+            printf '%s\n' \
+              '# CONFIG_TARGET_MULTI_PROFILE is not set' \
+              '# CONFIG_TARGET_PER_DEVICE_ROOTFS is not set' \
+              '# CONFIG_TARGET_ALL_PROFILES is not set' \
+              "CONFIG_TARGET_mediatek_mt7981_DEVICE_${device}=y" >> .config
           fi
           cat scripts/ci/ci-extra.config >> .config
           echo "Selected device config:"
