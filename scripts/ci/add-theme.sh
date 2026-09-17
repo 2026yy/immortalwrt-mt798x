@@ -6,12 +6,24 @@ set -e
 ROOT="${1:-.}"
 cd "$ROOT"
 
+# package/feeds/... is a symlink into feeds/...; patch the real file once.
+# A second pass would turn +wget-ssl into the nonexistent +wget-ssl-ssl.
+patched=
 for mk in \
-	package/feeds/luci/luci-theme-argon/Makefile \
-	feeds/luci/themes/luci-theme-argon/Makefile
+	feeds/luci/themes/luci-theme-argon/Makefile \
+	package/feeds/luci/luci-theme-argon/Makefile
 do
 	[ -f "$mk" ] || continue
-	sed -i 's/+wget/+wget-ssl/g; s/+curl/+wget-ssl/g' "$mk"
+	real=$(readlink -f "$mk" 2>/dev/null || realpath "$mk" 2>/dev/null || echo "$mk")
+	case " $patched " in
+		*" $real "*) continue ;;
+	esac
+	sed -i -E 's/\+wget(-ssl)?/+wget-ssl/g; s/\+curl/+wget-ssl/g' "$real"
+	if grep -q 'wget-ssl-ssl' "$real"; then
+		echo "ERROR: $real still has wget-ssl-ssl after patching"
+		exit 1
+	fi
+	patched="$patched $real"
 done
 
 if [ ! -e package/feeds/luci/luci-theme-argon/Makefile ] && [ ! -e feeds/luci/themes/luci-theme-argon/Makefile ]; then
