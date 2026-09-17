@@ -143,7 +143,7 @@ jobs:
           chmod +x scripts/ci/prepare-feeds.sh
           scripts/ci/prepare-feeds.sh
 
-      - name: Add Argon theme
+      - name: Set Argon as default theme
         run: |
           chmod +x scripts/ci/add-theme.sh
           scripts/ci/add-theme.sh "$PWD"

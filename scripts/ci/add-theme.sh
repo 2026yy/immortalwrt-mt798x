@@ -1,16 +1,9 @@
 #!/bin/sh
-# Replace stock Argon with jerrykuku Argon (LuCI 21.02 / lua).
+# Use ImmortalWrt 21.02 feed Argon. Only set it as the default LuCI theme.
 set -e
 
 ROOT="${1:-.}"
 cd "$ROOT"
-
-rm -rf feeds/luci/themes/luci-theme-argon \
-	package/luci-theme-argon \
-	package/luci-app-argon-config
-
-git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
-git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 
 mkdir -p files/etc/uci-defaults
 cat > files/etc/uci-defaults/30-default-theme <<'EOF'
