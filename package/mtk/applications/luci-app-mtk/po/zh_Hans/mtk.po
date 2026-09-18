@@ -52,7 +52,7 @@ msgstr "温度"
 msgid "Tx Power"
 msgstr "发射功率"
 
-msgid "Current Rate"
+msgid "当前速率"
 msgstr "当前速率"
 
 msgid "Driver version"

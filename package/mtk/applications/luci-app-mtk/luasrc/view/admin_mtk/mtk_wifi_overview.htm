@@ -93,7 +93,7 @@ local chipname
                         <%end%>
                         <%local cur_rate = mtkwifi.get_current_rate(main_ifname)%>
                         <%if cur_rate then%>
-                            <span> <%:Current Rate%>: <%=cur_rate%> <br/> </span>
+                            <span> <%:当前速率%>: <%=cur_rate%> <br/> </span>
                         <%end%>
                         <%end%>
                     </td>
@@ -142,7 +142,7 @@ local chipname
                                 <span id="CHANNEL_<%=vif.vifname%>"><%=vif.__channel or dev.Channel%></span>
                             <br>
                             <% if vif.state == "up" then %>
-                            <strong>BSSID:</strong> <span id="BSSID_<%=vif.vifname%>"><%=vif.__bssid%></span> | <strong><%:Wireless Mode%>:</strong> <span><%=dev.WirelessModeList[tonumber(vif.__wirelessmode)]%></span><% local vif_rate = mtkwifi.get_current_rate(vif.vifname) %><% if vif_rate then %> | <strong><%:Current Rate%>:</strong> <span><%=vif_rate%></span><% end %>
+                            <strong>BSSID:</strong> <span id="BSSID_<%=vif.vifname%>"><%=vif.__bssid%></span> | <strong><%:Wireless Mode%>:</strong> <span><%=dev.WirelessModeList[tonumber(vif.__wirelessmode)]%></span><% local vif_rate = mtkwifi.get_current_rate(vif.vifname) %><% if vif_rate then %> | <strong><%:当前速率%>:</strong> <span><%=vif_rate%></span><% end %>
                             <% else %>
                             <%:Wireless is disabled or not associated%>
                             <% end %>

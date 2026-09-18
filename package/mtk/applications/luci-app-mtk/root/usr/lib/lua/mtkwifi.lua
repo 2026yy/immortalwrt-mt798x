@@ -391,9 +391,7 @@ function mtkwifi.get_current_rate(ifname)
         return nil
     end
     local rate
-    if mbps >= 1000 then
-        rate = string.format("%.1f Gbit/s", mbps / 1000)
-    elseif mbps == math.floor(mbps) then
+    if mbps == math.floor(mbps) then
         rate = string.format("%d Mbit/s", mbps)
     else
         rate = string.format("%.1f Mbit/s", mbps)
