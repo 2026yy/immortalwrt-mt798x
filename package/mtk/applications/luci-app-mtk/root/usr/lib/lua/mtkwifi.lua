@@ -359,6 +359,51 @@ function mtkwifi.get_txpwr(devname)
     return nil
 end
 
+function mtkwifi.get_current_rate(ifname)
+    if not ifname or ifname == "" then
+        return nil
+    end
+    local js = mtkwifi.read_pipe(string.format("ubus call iwinfo info '{\"device\":\"%s\"}' 2>/dev/null", ifname)) or ""
+    local kbps = tonumber(string.match(js, '"bitrate":%s*(%d+)'))
+    local htmode = string.match(js, '"htmode":%s*"([^"]+)"')
+    local mbps
+    if kbps and kbps > 0 then
+        mbps = kbps / 1000
+    else
+        local info = mtkwifi.read_pipe("iwinfo "..ifname.." info 2>/dev/null") or ""
+        mbps = tonumber(string.match(info, "Bit Rate:%s*([%d%.]+)%s*MBit"))
+        if not mbps then
+            local iwcfg = mtkwifi.read_pipe("iwconfig "..ifname.." 2>/dev/null") or ""
+            local n, unit = string.match(iwcfg, "Bit Rate[=:]%s*([%d%.]+)%s*([GMK]?b/s)")
+            n = tonumber(n)
+            if n then
+                if unit == "Gb/s" then
+                    mbps = n * 1000
+                elseif unit == "Kb/s" then
+                    mbps = n / 1000
+                else
+                    mbps = n
+                end
+            end
+        end
+    end
+    if not mbps or mbps <= 0 then
+        return nil
+    end
+    local rate
+    if mbps >= 1000 then
+        rate = string.format("%.1f Gbit/s", mbps / 1000)
+    elseif mbps == math.floor(mbps) then
+        rate = string.format("%d Mbit/s", mbps)
+    else
+        rate = string.format("%.1f Mbit/s", mbps)
+    end
+    if htmode and htmode ~= "" then
+        return rate.." ("..htmode..")"
+    end
+    return rate
+end
+
 function mtkwifi.get_temp(devname)
     local vif_name = nil
     local devs = mtkwifi.get_all_devs()
